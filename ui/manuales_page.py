@@ -123,7 +123,7 @@ def display_manuales_page():
     tanto los manuales como los informes de análisis estratégico.
     """
     # --- SECCIÓN 1: MANUALES ---
-    st.header("Consulta los Manuales.")
+    st.header("Consulta los Manuales")
     
     base_path = "data"
     manuales_paths = {
@@ -165,7 +165,7 @@ def display_manuales_page():
     #st.divider()
 
     # --- SECCIÓN 2: ANÁLISIS ESTRATÉGICO ---
-    st.header("Explora lo más preguntado.")
+    st.header("Explora lo más preguntado")
     #st.markdown("Selecciona una especialidad para visualizar las 'zonas calientes' del temario.") 
 
     report_prefixes = {
