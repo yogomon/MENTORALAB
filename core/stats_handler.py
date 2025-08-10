@@ -126,7 +126,7 @@ def _actualizar_stats_agregadas_usuario_tema(
                 tiempo_para_suma, 
                 incremento_contador_tiempo
             ))
-    except Exception as e_db:
+        except Exception as e_db:
             logger.error(f"Error actualizando stats_agregadas_usuario_tema (user {usuario_id}, tema {tema_id}): {e_db}", exc_info=True)
             raise
 
