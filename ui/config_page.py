@@ -4,10 +4,10 @@ import logging
 
 # MODIFICACIÓN: Actualizar las importaciones para apuntar a los nuevos scripts.
 from core.db_quiz_loader import (
-    conectar_db,
     obtener_examenes_disponibles,
     format_topics_for_tree
 )
+from core.database import conectar_db
 from core.db_quiz_handler import (
     obtener_preguntas_para_cuestionario,
     obtener_datos_examen,

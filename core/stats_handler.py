@@ -3,10 +3,9 @@ import logging
 import datetime
 from datetime import datetime as dt
 from psycopg2 import sql
-import psycopg2
 
 # MODIFICACIÓN: Importar desde los nuevos módulos refactorizados
-from .db_quiz_loader import conectar_db, DatabaseConnectionError
+from core.database import conectar_db
 from .db_quiz_handler import get_temas_directos_pregunta, get_pregunta_detalle_por_id, obtener_total_respuestas_previas_usuario
 
 # --- Configuración Global ---
@@ -65,7 +64,7 @@ def _registrar_respuesta_usuario_y_stats_pregunta(
             tiempo_para_suma, 
             incremento_contador_tiempo
         ))
-    except psycopg2.Error as e_db:
+    except Exception as e_db:
         logger.error(f"Error en _registrar_respuesta_usuario_y_stats_pregunta para P_ID {pregunta_id}: {e_db}", exc_info=True)
         raise
     return respuesta_id_insertada
@@ -90,7 +89,7 @@ def _registrar_respuesta_tema_detalle(cursor, respuesta_usuario_id, pregunta_id,
     for tema_id in temas_ids:
         try:
             cursor.execute(sql_insert_tema_detalle, (respuesta_usuario_id, tema_id, es_correcta))
-        except psycopg2.Error as e_db:
+        except Exception as e_db:
             logger.error(f"Error insertando en stats_respuestas_usuario_tema_detalle (resp_id {respuesta_usuario_id}, tema_id {tema_id}): {e_db}", exc_info=True)
 
 def _actualizar_stats_agregadas_usuario_tema(
@@ -127,7 +126,7 @@ def _actualizar_stats_agregadas_usuario_tema(
                 tiempo_para_suma, 
                 incremento_contador_tiempo
             ))
-        except psycopg2.Error as e_db:
+    except Exception as e_db:
             logger.error(f"Error actualizando stats_agregadas_usuario_tema (user {usuario_id}, tema {tema_id}): {e_db}", exc_info=True)
             raise
 
@@ -157,7 +156,7 @@ def _actualizar_stats_agregadas_usuario_global(cursor, usuario_id, es_correcta):
             usuario_id, acierto_val, error_val, 
             porc_acierto_inicial, porc_error_inicial
         ))
-    except psycopg2.Error as e_db:
+    except Exception as e_db:
         logger.error(f"Error actualizando stats_agregadas_usuario_global para user {usuario_id}: {e_db}", exc_info=True)
         raise
 
@@ -205,7 +204,7 @@ def _actualizar_estadisticas_temporales(cursor, usuario_id, es_correcta, fecha_r
         res_anterior = cursor.fetchone()
         if res_anterior:
             porc_aciertos_anterior_db = res_anterior[0] if res_anterior[0] is not None else 0.00
-    except psycopg2.Error as e_get_ant:
+    except Exception as e_get_ant:
         logger.warning(f"No se pudo obtener stats del periodo anterior para {tipo_temporal} {usuario_id}: {e_get_ant}")
 
     query_template = sql.SQL("""
@@ -246,7 +245,7 @@ def _actualizar_estadisticas_temporales(cursor, usuario_id, es_correcta, fecha_r
             var_p_acierto_inicial,
             porc_aciertos_anterior_db
         ))
-    except psycopg2.Error as e_db:
+    except Exception as e_db:
         logger.error(f"Error actualizando stats temporales ({tipo_temporal}) para {usuario_id}: {e_db}", exc_info=True)
         raise
 
@@ -332,7 +331,7 @@ def procesar_respuestas_del_quiz_finalizado(usuario_id, respuestas_acumuladas_ui
         conn.commit()
         logger.info("COMMIT REALIZADO. Estadísticas del quiz procesadas.")
 
-    except (DatabaseConnectionError, psycopg2.Error) as e_db_main:
+    except Exception as e_db_main:
         logger.critical(f"ERROR DE BD CRÍTICO durante procesamiento del quiz: {e_db_main}", exc_info=True)
         if conn:
             try: conn.rollback(); logger.info("ROLLBACK realizado.")

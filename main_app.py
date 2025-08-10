@@ -27,7 +27,8 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 # --- Importaciones de tus nuevos módulos ---
-from core.db_quiz_loader import conectar_db, obtener_temas_disponibles
+from core.db_quiz_loader import obtener_temas_disponibles
+from core.database import conectar_db
 from ui.styles import CSS_STRING
 from core import auth_handler
 from utils.helpers import COMUNIDAD_MAP, ESPECIALIDAD_MAP, get_key_from_value

@@ -1,6 +1,3 @@
-import psycopg2
-import psycopg2.extras
-import os
 import random
 from collections import defaultdict
 import sys
@@ -44,7 +41,7 @@ def obtener_datos_examen(conn, examen_id):
             cursor.execute("SELECT ano, comunidad_autonoma, especialidad FROM examenes_oficiales WHERE id = %s", (examen_id,))
             resultado = cursor.fetchone()
             return dict(resultado) if resultado else None
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL obteniendo datos examen {examen_id}: {e}", exc_info=True)
         st.error("Error al obtener los datos del examen.")
         return None
@@ -56,7 +53,7 @@ def obtener_texto_escenario(conn, escenario_id):
             cursor.execute("SELECT texto_escenario FROM escenarios WHERE id = %s", (escenario_id,))
             resultado = cursor.fetchone()
             return resultado['texto_escenario'] if resultado else None
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL obteniendo escenario {escenario_id}: {e}", exc_info=True)
         st.error("Error al obtener el caso práctico.")
         return None
@@ -92,7 +89,7 @@ def _seleccionar_ids_practicas_por_bloques(conn, n_objetivo, temas_lista=None, t
         with conn.cursor() as cursor:
             cursor.execute(final_query_candidatos, tuple(params))
             preguntas_candidatas_raw = cursor.fetchall()
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL al seleccionar candidatos prácticos: {e}", exc_info=True)
         raise
 
@@ -167,7 +164,7 @@ def _seleccionar_ids_teoricas_random(conn, n_objetivo, temas_lista=None, topic_i
         with conn.cursor() as cursor:
             cursor.execute(final_query, tuple(params))
             return [row['id'] for row in cursor.fetchall()]
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL al seleccionar preguntas teóricas: {e}", exc_info=True)
         raise
 
@@ -198,7 +195,7 @@ def _seleccionar_bloques_practicos_cualificados(conn, topic_ids, temas_lista):
         with conn.cursor() as cursor:
             cursor.execute(sql_mapa_escenarios)
             mapa_escenarios_raw = cursor.fetchall()
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL en pre-búsqueda de mapa de escenarios: {e}", exc_info=True)
         st.error("Error al analizar los casos prácticos.")
         return {}
@@ -393,7 +390,7 @@ def obtener_preguntas_para_cuestionario(conn, config_quiz, temas_lista=None, esp
             if modo and modo != "Libre-Aleatorio": 
                 st.warning("No se encontraron preguntas que cumplan los criterios seleccionados.")
             
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL general en obtener_preguntas: {e}", exc_info=True)
         st.error(f"Error de base de datos al obtener preguntas.")
         return []
@@ -410,7 +407,7 @@ def get_temas_directos_pregunta(conn, pregunta_id):
             cursor.execute(query, (pregunta_id,))
             resultados = cursor.fetchall()
             tema_ids = [row['tema_id'] for row in resultados]
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL al obtener temas directos para P_ID {pregunta_id}: {e}", exc_info=True)
         return []
     return tema_ids
@@ -423,7 +420,7 @@ def get_pregunta_detalle_por_id(conn, pregunta_id):
             cursor.execute(query, (pregunta_id,))
             pregunta = cursor.fetchone()
             return dict(pregunta) if pregunta else None
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL en get_pregunta_detalle_por_id para {pregunta_id}: {e}", exc_info=True)
         return None
 
@@ -435,7 +432,7 @@ def obtener_total_respuestas_previas_usuario(conn, usuario_id):
             cursor.execute(query, (usuario_id,))
             resultado = cursor.fetchone()
             return resultado['total_respuestas'] if resultado and resultado['total_respuestas'] is not None else 0
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error obteniendo total_respuestas_previas para {usuario_id}: {e}", exc_info=True)
         st.error("Error crítico al obtener el historial de respuestas del usuario.")
         raise
@@ -454,7 +451,7 @@ def obtener_explicacion_pregunta(conn, pregunta_id):
             else:
                 logger.warning(f"No se encontró explicación en la BD para la pregunta ID: {pregunta_id}")
                 return None # No se encontró explicación
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL obteniendo explicación para pregunta {pregunta_id}: {e}", exc_info=True)
         st.error("Error al obtener la explicación de la pregunta.")
         return None    

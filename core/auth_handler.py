@@ -5,11 +5,11 @@ import re
 
 # MODIFICACIÓN: Importar las funciones directamente desde el nuevo módulo 'db_quiz_loader'.
 from core.db_quiz_loader import (
-    conectar_db, 
     crear_usuario, 
     obtener_usuario_por_nombre, 
     obtener_usuario_por_email
 )
+from core.database import conectar_db
 
 # --- Configuración de Passlib ---
 # Usamos bcrypt como el esquema de hashing principal.

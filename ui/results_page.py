@@ -1,8 +1,7 @@
 import streamlit as st
-import psycopg2 
 
 # Importaciones de tus módulos refactorizados
-from core.db_quiz_loader import conectar_db
+from core.database import conectar_db
 from core.db_quiz_handler import obtener_texto_escenario 
 from ui.dialogs import mostrar_dialogo_revision 
 

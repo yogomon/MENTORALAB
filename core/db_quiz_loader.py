@@ -1,6 +1,3 @@
-import psycopg2
-import psycopg2.extras
-import os
 import random
 from collections import defaultdict
 from utils.helpers import clave_ordenacion_natural # Asegúrate que esta importación sea correcta
@@ -35,25 +32,6 @@ except ImportError:
             sys.exit(1) 
     st = _MockStreamlit()
 
-# --- Conexión Base de Datos ---
-def conectar_db():
-    logger.info("Intentando conectar a la BD...")
-    try:
-        conn = psycopg2.connect(
-            host=os.environ.get('DB_HOST'),
-            port=os.environ.get('DB_PORT'),
-            dbname=os.environ.get('DB_NAME'),
-            user=os.environ.get('DB_USER'),
-            password=os.environ.get('DB_PASSWORD'),
-            cursor_factory=psycopg2.extras.DictCursor
-        )
-        logger.info(f"Conexión a la BD establecida (Host: {os.environ.get('DB_HOST')}).")
-        return conn
-    except Exception as e:
-        msg = f"Error fatal al conectar a la BD: {e}"
-        logger.critical(msg, exc_info=True)
-        raise DatabaseConnectionError(msg) from e
-
 # --- Funciones de Obtención de Datos para Configuración ---
 def obtener_temas_disponibles(conn, especialidad_usuario=None):
     temas_lista = []
@@ -76,7 +54,7 @@ def obtener_temas_disponibles(conn, especialidad_usuario=None):
                     'nombre': row['nombre'],
                     'original_id': int(row['original_id'])
                 })
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL al obtener temas: {e}", exc_info=True)
         st.error("Error al cargar la lista de temas desde la base de datos.") 
         return [] 
@@ -91,7 +69,7 @@ def obtener_examenes_disponibles(conn):
             cursor.execute(query)
             resultados = cursor.fetchall()
             examenes = [dict(row) for row in resultados]
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error SQL al obtener lista de exámenes: {e}", exc_info=True)
         st.error("Error al cargar la lista de exámenes desde la base de datos.")
         return []
@@ -166,7 +144,7 @@ def obtener_ids_completos(conn, selected_ids, temas_lista=None):
                 newly_found_ids_from_groups = {row['tema_id'] for row in cursor.fetchall()}
                 ids_finales.update(newly_found_ids_from_groups)
 
-    #except psycopg2.Error as e:
+    #except Exception as e:
         logger.error(f"Error SQL buscando temas por grupo: {e}", exc_info=True)
         st.error("Error al buscar temas relacionados por grupo.") 
         return expandir_temas_ids(initial_selected_ids, local_temas_lista)
@@ -235,7 +213,7 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
             conn.commit() 
             logger.info(f"Usuario '{nombre_usuario}' creado con ID: {usuario_id}")
             return usuario_id
-    except psycopg2.IntegrityError as e:
+    except Exception as e:
         conn.rollback()
         logger.warning(f"Error de integridad al crear usuario '{nombre_usuario}' o email '{email}': {e}")
         if "usuarios_nombre_usuario_key" in str(e).lower():
@@ -244,11 +222,6 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
             st.error(f"Error: El email '{email}' ya está registrado.")
         else:
             st.error(f"Error de integridad al crear usuario: {e}")
-        return None
-    except psycopg2.Error as e:
-        conn.rollback()
-        logger.error(f"Error de BD al crear usuario '{nombre_usuario}': {e}", exc_info=True)
-        st.error(f"Error de base de datos al crear usuario.")
         return None
     except Exception as e:
         conn.rollback()
@@ -266,7 +239,7 @@ def obtener_usuario_por_nombre(conn, nombre_usuario):
             cursor.execute(sql_select, (nombre_usuario,))
             usuario = cursor.fetchone()
             return dict(usuario) if usuario else None
-    except psycopg2.Error as e:
+    except Exception as e:
         logger.error(f"Error de BD al obtener usuario '{nombre_usuario}': {e}", exc_info=True)
         return None
 
@@ -277,6 +250,6 @@ def obtener_usuario_por_email(conn, email):
             cursor.execute(sql_select, (email,))
             usuario = cursor.fetchone()
             return dict(usuario) if usuario else None
-    except psycopg2.Error as e:
-        logger.error(f"Error de psycopg2 al obtener usuario por email {email}: {e}", exc_info=True)
+    except Exception as e:
+        logger.error(f"Error al obtener usuario por email {email}: {e}", exc_info=True)
         return None

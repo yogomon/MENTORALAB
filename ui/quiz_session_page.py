@@ -7,7 +7,7 @@ import threading
 import logging
 
 # Importaciones de tus módulos refactorizados
-from core.db_quiz_loader import conectar_db
+from core.database import conectar_db
 from core.db_quiz_handler import obtener_datos_examen, obtener_texto_escenario, obtener_explicacion_pregunta
 from ui.dialogs import mostrar_dialogo_explicacion_ia_maqueta_v2 
 from core import stats_handler 

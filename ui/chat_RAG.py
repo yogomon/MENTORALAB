@@ -3,8 +3,6 @@
 # MODIFICACIÓN: Refactorizado para un flujo de estado robusto y correcto.
 # ==============================================================================
 import streamlit as st
-import psycopg2
-import psycopg2.extras
 import json
 import logging
 import os
@@ -12,6 +10,7 @@ from dotenv import load_dotenv
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from openai import OpenAI
+from core.database import conectar_db
 
 # --- 1. Configuración y Parámetros ---
 logger = logging.getLogger(__name__)
@@ -46,20 +45,6 @@ PREGUNTA DEL USUARIO:
 """
 
 # --- Funciones de BD y Lógica RAG ---
-def get_db_connection():
-    """Establece y devuelve una conexión a la base de datos PostgreSQL."""
-    try:
-        conn = psycopg2.connect(
-            host=os.environ.get('DB_HOST'), port=os.environ.get('DB_PORT'),
-            dbname=os.environ.get('DB_NAME'), user=os.environ.get('DB_USER'),
-            password=os.environ.get('DB_PASSWORD'),
-            cursor_factory=psycopg2.extras.DictCursor
-        )
-        return conn
-    except Exception as e:
-        logger.error(f"No se pudo conectar a la base de datos en el chat RAG: {e}", exc_info=True)
-        return None
-
 def get_question_embedding(question_text):
     """Genera un embedding para la pregunta del usuario."""
     try:
@@ -148,7 +133,7 @@ def display_rag_chat_section():
         # Mantenemos avatar=None también aquí
         with st.chat_message("assistant", avatar=None):
             with st.spinner("Buscando en el Manual de Medicina de Laboratorio..."):
-                conn = get_db_connection()
+                conn = conectar_db()
                 if not conn:
                     full_response = "Error de conexión a la base de datos."
                     st.error(full_response)
