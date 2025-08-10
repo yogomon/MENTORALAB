@@ -148,6 +148,7 @@ def display_manuales_page():
 
     selected_view = st.session_state.get("manual_view")
     if selected_view:
+        st.subheader("Capítulos disponibles:")
         path_to_scan = manuales_paths.get(selected_view)
         manual_files = get_manual_files(path_to_scan)
 
@@ -164,7 +165,7 @@ def display_manuales_page():
     #st.divider()
 
     # --- SECCIÓN 2: ANÁLISIS ESTRATÉGICO ---
-    st.header("Informes de rentabilidad")
+    st.header("Análisis estratégico")
     #st.markdown("Selecciona una especialidad para visualizar las 'zonas calientes' del temario.") 
 
     report_prefixes = {
