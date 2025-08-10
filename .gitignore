@@ -1,0 +1,49 @@
+# ==============================================================================
+# Archivo .gitignore para el proyecto Mentora
+# Este archivo especifica los ficheros y carpetas que Git debe ignorar.
+# ==============================================================================
+
+# --- Entorno Virtual de Python ---
+# Ignora la carpeta del entorno virtual para no subir las librerías instaladas.
+.venv/
+venv/
+env/
+
+# --- Ficheros de Cache de Python ---
+# Ignora los ficheros de bytecode compilado que Python genera automáticamente.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Ficheros de Entorno y Secretos ---
+# ¡MUY IMPORTANTE! Ignora el fichero .env para no subir tus contraseñas
+# y claves de API a un repositorio público como GitHub.
+.env
+
+# --- Carpetas de Datos y Ficheros Generados ---
+# Ignora la carpeta de salida donde se guardan los informes generados.
+
+INSTRUCCIONES.TXT
+
+# Ignora la carpeta de bibliografía y otras
+/bibliografia
+/utils/*
+!/utils/helpers.py
+/gendocs
+/scripts
+
+# --- Ficheros de Log ---
+# Ignora todos los ficheros de registro para no llenar el repositorio con logs.
+*.log
+
+# --- Ficheros de Configuración de IDEs y Editores ---
+# Ignora las carpetas de configuración de editores populares como VSCode o PyCharm.
+.vscode/
+.idea/
+
+# --- Ficheros del Sistema Operativo ---
+# Ignora ficheros basura generados por macOS y Windows.
+.DS_Store
+Thumbs.db
+.env
