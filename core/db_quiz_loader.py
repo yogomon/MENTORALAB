@@ -242,13 +242,9 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
             conn.commit() 
             logger.info(f"Usuario '{nombre_usuario}' creado con ID: {usuario_id}")
             return usuario_id
-<<<<<<< Updated upstream
-    except psycopg2.IntegrityError as e:
-=======
             
     except psycopg2.IntegrityError as e:
         # Este error es específico para cuando un usuario o email ya existe
->>>>>>> Stashed changes
         conn.rollback()
         logger.warning(f"Error de integridad al crear usuario '{nombre_usuario}' o email '{email}': {e}")
         if "usuarios_nombre_usuario_key" in str(e).lower():
@@ -258,13 +254,6 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
         else:
             st.error(f"Error de integridad al crear usuario: {e}")
         return None
-<<<<<<< Updated upstream
-    except psycopg2.Error as e:
-        conn.rollback()
-        logger.error(f"Error de BD al crear usuario '{nombre_usuario}': {e}", exc_info=True)
-        st.error(f"Error de base de datos al crear usuario.")
-        return None
-=======
 
     except psycopg2.Error as e:
         # Este error captura cualquier otro problema relacionado con la base de datos
@@ -273,7 +262,6 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
         st.error(f"Error de base de datos al crear el usuario.")
         return None
         
->>>>>>> Stashed changes
     except Exception as e:
         # Este es un comodín para cualquier otro error inesperado
         conn.rollback()
