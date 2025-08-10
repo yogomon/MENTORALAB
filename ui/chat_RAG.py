@@ -49,32 +49,42 @@ def get_question_embedding(question_text):
     """Genera un embedding para la pregunta del usuario."""
     try:
         response = openai_client.embeddings.create(input=[question_text], model="text-embedding-3-small")
-        return np.array(response.data[0].embedding)
+        # Devuelve una lista de floats, que es lo que pgvector necesita
+        return response.data[0].embedding
     except Exception as e:
         logger.error(f"Error al generar embedding para la pregunta: {e}")
         return None
 
 def find_relevant_chunks(conn, question_embedding, top_k):
-    """Encuentra los chunks más relevantes en la base de datos."""
+    """
+    Encuentra los chunks más relevantes usando la búsqueda de vectores de pgvector.
+    Este método es ultrarrápido y se ejecuta en la base de datos.
+    """
     if question_embedding is None:
         return ""
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT chunk_text, embedding FROM manual_chunks")
-            all_chunks = cursor.fetchall()
+            # El operador '<=>' es de pgvector y calcula la distancia de coseno.
+            # Buscamos los 'top_k' chunks con la menor distancia (más similares).
+            cursor.execute(
+                """
+                SELECT chunk_text FROM manual_chunks
+                ORDER BY embedding <=> %s
+                LIMIT %s
+                """,
+                (str(question_embedding), top_k)
+            )
+            results = cursor.fetchall()
         
-        if not all_chunks:
+        if not results:
             return ""
 
-        chunk_vectors = np.array([json.loads(chunk['embedding']) for chunk in all_chunks])
-        similarities = cosine_similarity(question_embedding.reshape(1, -1), chunk_vectors)[0]
-        top_k_indices = np.argsort(similarities)[-top_k:][::-1]
-        
-        relevant_texts = [all_chunks[i]['chunk_text'] for i in top_k_indices]
+        relevant_texts = [row['chunk_text'] for row in results]
         return "\n---\n".join(relevant_texts)
         
     except Exception as e:
-        logger.error(f"Error al buscar chunks relevantes: {e}", exc_info=True)
+        logger.error(f"Error al buscar chunks relevantes con pgvector: {e}", exc_info=True)
+        st.error("Ocurrió un error al buscar en la base de datos. Asegúrate de que la extensión 'vector' esté habilitada y la columna 'embedding' sea del tipo 'vector'.")
         return ""
 
 def stream_deepseek_response(question, context):
