@@ -20,6 +20,7 @@ __pycache__/
 # ¡MUY IMPORTANTE! Ignora el fichero .env para no subir tus contraseñas
 # y claves de API a un repositorio público como GitHub.
 .env
+.streamlit/secrets.toml
 
 # --- Carpetas de Datos y Ficheros Generados ---
 # Ignora la carpeta de salida donde se guardan los informes generados.

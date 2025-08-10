@@ -124,8 +124,30 @@ def display_registration_form():
         st.markdown("""<small>Requisitos...</small>""", unsafe_allow_html=True)
         submitted_registro = st.form_submit_button("Registrarme")
         if submitted_registro:
-            # Lógica de registro...
-            pass
+            if reg_password != reg_password_confirm:
+                st.error("Las contraseñas no coinciden.")
+            else:
+                # Obtenemos las claves de los diccionarios para pasarlas a la función
+                reg_comunidad_clave = get_key_from_value(COMUNIDAD_MAP, reg_comunidad_nombre)
+                reg_especialidad_clave = get_key_from_value(ESPECIALIDAD_MAP, reg_especialidad_nombre)
+                
+                # Llamamos a la función de registro
+                usuario_id, error_msg = auth_handler.registrar_nuevo_usuario(
+                    reg_nombre, 
+                    reg_password, 
+                    reg_email, 
+                    reg_comunidad_clave, 
+                    reg_especialidad_clave
+                )
+                
+                # Mostramos el resultado al usuario
+                if error_msg:
+                    st.error(error_msg)
+                else:
+                    st.success("¡Usuario registrado con éxito! Ahora puedes iniciar sesión.")
+                    time.sleep(2) # Pausa para que el usuario lea el mensaje
+                    st.session_state.view = 'login'
+                    st.rerun()
     if st.button("¿Ya tienes cuenta? Inicia Sesión", key="nav_to_login_btn_reg_form"):
         st.session_state.view = 'login'
         st.rerun()

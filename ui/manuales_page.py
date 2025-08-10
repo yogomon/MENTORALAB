@@ -123,7 +123,7 @@ def display_manuales_page():
     tanto los manuales como los informes de análisis estratégico.
     """
     # --- SECCIÓN 1: MANUALES ---
-    st.header("Consulta los Manuales")
+    st.header("Consulta los Manuales.")
     
     base_path = "data"
     manuales_paths = {
@@ -148,6 +148,7 @@ def display_manuales_page():
 
     selected_view = st.session_state.get("manual_view")
     if selected_view:
+        st.subheader("Capítulos disponibles:")
         path_to_scan = manuales_paths.get(selected_view)
         manual_files = get_manual_files(path_to_scan)
 
@@ -164,7 +165,7 @@ def display_manuales_page():
     #st.divider()
 
     # --- SECCIÓN 2: ANÁLISIS ESTRATÉGICO ---
-    st.header("Informes de rentabilidad")
+    st.header("Explora lo más preguntado.")
     #st.markdown("Selecciona una especialidad para visualizar las 'zonas calientes' del temario.") 
 
     report_prefixes = {
@@ -173,7 +174,7 @@ def display_manuales_page():
         "conjunto": "Informe Rentabilidad - Conjunto"
     }
 
-    col_rep1, col_rep2, col_rep3 = st.columns(3)
+    col_rep1, col_rep2 = st.columns(2)
     with col_rep1:
         if st.button("Bioquímica Clínica", use_container_width=True, type="secondary"):
             st.session_state.informe_a_mostrar = "bioquimica"
@@ -182,10 +183,7 @@ def display_manuales_page():
         if st.button("Análisis Clínicos", use_container_width=True, type="secondary"):
             st.session_state.informe_a_mostrar = "analisis"
             st.rerun()
-    with col_rep3:
-        if st.button("Análisis Conjunto", use_container_width=True, type="secondary"):
-            st.session_state.informe_a_mostrar = "conjunto"
-            st.rerun()
+    
 
     # --- LÓGICA PARA ABRIR DIÁLOGOS ---
     # Se comprueba si se debe mostrar un manual

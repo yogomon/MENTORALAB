@@ -6,6 +6,9 @@ from collections import defaultdict
 from utils.helpers import clave_ordenacion_natural # Asegúrate que esta importación sea correcta
 import sys
 import logging
+import psycopg2
+import psycopg2.extras
+import streamlit as st
 
 # --- Configuración del Logger para este módulo ---
 logger = logging.getLogger(__name__)
@@ -224,6 +227,9 @@ def format_topics_for_tree(temas_lista):
 
 # --- Funciones de Gestión de Usuarios ---
 def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma, especialidad, rol='usuario', activo=True):
+    """
+    Crea un nuevo usuario en la base de datos con un manejo de errores robusto.
+    """
     try:
         with conn.cursor() as cursor:
             sql_insert = """
@@ -232,10 +238,17 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
             """
             cursor.execute(sql_insert, (nombre_usuario, email, password_hash, comunidad_autonoma, especialidad, rol, activo))
             usuario_id = cursor.fetchone()['id']
+            # ¡IMPORTANTE! El commit confirma la transacción
             conn.commit() 
             logger.info(f"Usuario '{nombre_usuario}' creado con ID: {usuario_id}")
             return usuario_id
+<<<<<<< Updated upstream
     except psycopg2.IntegrityError as e:
+=======
+            
+    except psycopg2.IntegrityError as e:
+        # Este error es específico para cuando un usuario o email ya existe
+>>>>>>> Stashed changes
         conn.rollback()
         logger.warning(f"Error de integridad al crear usuario '{nombre_usuario}' o email '{email}': {e}")
         if "usuarios_nombre_usuario_key" in str(e).lower():
@@ -245,15 +258,27 @@ def crear_usuario(conn, nombre_usuario, password_hash, email, comunidad_autonoma
         else:
             st.error(f"Error de integridad al crear usuario: {e}")
         return None
+<<<<<<< Updated upstream
     except psycopg2.Error as e:
         conn.rollback()
         logger.error(f"Error de BD al crear usuario '{nombre_usuario}': {e}", exc_info=True)
         st.error(f"Error de base de datos al crear usuario.")
         return None
+=======
+
+    except psycopg2.Error as e:
+        # Este error captura cualquier otro problema relacionado con la base de datos
+        conn.rollback()
+        logger.error(f"Error de base de datos al crear usuario '{nombre_usuario}': {e}", exc_info=True)
+        st.error(f"Error de base de datos al crear el usuario.")
+        return None
+        
+>>>>>>> Stashed changes
     except Exception as e:
+        # Este es un comodín para cualquier otro error inesperado
         conn.rollback()
         logger.error(f"Error inesperado al crear usuario '{nombre_usuario}': {e}", exc_info=True)
-        st.error(f"Error inesperado al crear usuario.")
+        st.error(f"Ocurrió un error inesperado durante el registro.")
         return None
 
 def obtener_usuario_por_nombre(conn, nombre_usuario):
