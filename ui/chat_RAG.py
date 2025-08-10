@@ -117,7 +117,7 @@ def display_rag_chat_section():
     Muestra la interfaz completa del chat RAG con un flujo de estado robusto y correcto.
     """
     st.header("¿Tienes alguna duda?")
-    st.markdown("Buscaremos la respuesta en el Manual de Medicina de Laboratorio")
+    st.markdown("Buscaré la respuesta en el Manual de Medicina de Laboratorio")
     #st.markdown("¿Tienes alguna duda? Buscaré la respuesta en nuestro Manual.") 
 
     # --- INICIO DE LA CORRECCIÓN DEFINITIVA ---
