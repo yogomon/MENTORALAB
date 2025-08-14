@@ -147,7 +147,7 @@ def display_manuales_page():
             if "manual_a_mostrar" in st.session_state: del st.session_state.manual_a_mostrar
             st.rerun()
 
-    #st.divider()
+    st.divider()
 
     selected_view = st.session_state.get("manual_view")
     if selected_view:
