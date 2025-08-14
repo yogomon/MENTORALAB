@@ -122,9 +122,9 @@ def display_quiz_session_section():
                 with col_img_izq:
                     st.image(public_url, use_container_width=True)
             
-    except Exception as e:
-        # Muestra un error si no se puede obtener la URL (ej. el archivo no existe en el bucket)
-        st.caption(f"[Error al cargar la imagen '{nombre_imagen_completo}' desde la nube: {e}]")
+            except Exception as e:
+                # Muestra un error si no se puede obtener la URL (ej. el archivo no existe en el bucket)
+                st.caption(f"[Error al cargar la imagen '{nombre_imagen_completo}' desde la nube: {e}]")
 
         opciones_dict = {'A': pregunta_actual.get('opcion_a'), 'B': pregunta_actual.get('opcion_b'), 'C': pregunta_actual.get('opcion_c'), 'D': pregunta_actual.get('opcion_d')}
         opciones_validas = {k: v for k, v in opciones_dict.items() if v}
