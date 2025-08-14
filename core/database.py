@@ -72,6 +72,4 @@ def get_supabase_client():
         st.error("Error de configuración: Faltan las claves de Supabase.")
         return None
 
-        except Exception as e_local:
-            logger.critical(f"Error fatal al conectar a la BD: {e_local}")
-            return None
+      
