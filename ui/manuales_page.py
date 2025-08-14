@@ -34,9 +34,9 @@ def display_pdf_viewer(pdf_url, title):
     Muestra un archivo PDF desde una URL renderizando cada página en un canvas
     para evitar la selección y copia de texto.
     """
-    st.header(title)
+    #st.header(title)
     
-    if st.button("⬅️ Volver a la lista", key=f"back_btn_{title}"):
+    if st.button("⬅️ Volver", key=f"back_btn_{title}"):
         del st.session_state["pdf_a_mostrar"]
         st.rerun()
 
