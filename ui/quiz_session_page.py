@@ -8,9 +8,14 @@ import logging
 
 # Importaciones de tus módulos refactorizados
 from core.database import conectar_db
+from core.database import get_supabase_client
 from core.db_quiz_handler import obtener_datos_examen, obtener_texto_escenario, obtener_explicacion_pregunta
 from ui.dialogs import mostrar_dialogo_explicacion_ia_maqueta_v2 
 from core import stats_handler 
+
+supabase = get_supabase_client() 
+if not supabase:
+    st.stop()
 
 logger = logging.getLogger(__name__)
 
@@ -106,20 +111,20 @@ def display_quiz_session_section():
         nombre_imagen_completo = pregunta_actual.get('nombre_imagen')
         if nombre_imagen_completo:
             try:
-                # 1. Define el nombre de tu bucket de imágenes
+                # Define el nombre de tu bucket de imágenes
                 bucket_name = "imagenes"
                 
-                # 2. Obtiene la URL pública de la imagen desde Supabase Storage
+                # Obtiene la URL pública de la imagen desde Supabase Storage
                 public_url = supabase.storage.from_(bucket_name).get_public_url(nombre_imagen_completo)
                 
-                # 3. Muestra la imagen usando la URL
+                # Muestra la imagen usando la URL
                 col_img_izq, col_img_der = st.columns([1, 2])
                 with col_img_izq:
                     st.image(public_url, use_container_width=True)
             
-        except Exception as e:
-            # Muestra un error si no se puede obtener la URL (ej. el archivo no existe en el bucket)
-            st.caption(f"[Error al cargar la imagen '{nombre_imagen_completo}' desde la nube: {e}]")
+    except Exception as e:
+        # Muestra un error si no se puede obtener la URL (ej. el archivo no existe en el bucket)
+        st.caption(f"[Error al cargar la imagen '{nombre_imagen_completo}' desde la nube: {e}]")
 
         opciones_dict = {'A': pregunta_actual.get('opcion_a'), 'B': pregunta_actual.get('opcion_b'), 'C': pregunta_actual.get('opcion_c'), 'D': pregunta_actual.get('opcion_d')}
         opciones_validas = {k: v for k, v in opciones_dict.items() if v}
