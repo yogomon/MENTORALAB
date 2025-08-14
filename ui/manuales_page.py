@@ -124,6 +124,7 @@ def display_manuales_page():
     """
     # --- SECCIÓN 1: MANUALES ---
     st.header("Consulta los Manuales")
+    st.markdown("")
     
     base_path = "data"
     manuales_paths = {
