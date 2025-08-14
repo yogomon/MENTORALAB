@@ -23,6 +23,15 @@ def get_files_from_supabase(bucket_name: str):
     """Obtiene una lista de archivos de un bucket de Supabase."""
     try:
         response = supabase.storage.from_(bucket_name).list()
+        
+        # --- INICIO: LÍNEA DE DEPURACIÓN ---
+        # Mostramos la respuesta cruda de Supabase para diagnosticar el problema.
+        # Esto nos dirá si Supabase está devolviendo archivos o una lista vacía.
+        st.subheader("🔍 Diagnóstico de Supabase Storage")
+        st.write(f"Respuesta cruda del bucket '{bucket_name}':")
+        st.json(response)
+        # --- FIN: LÍNEA DE DEPURACIÓN ---
+
         # Filtramos para asegurarnos de que solo procesamos archivos PDF
         pdf_files = [file['name'] for file in response if file['name'].lower().endswith('.pdf')]
         return sorted(pdf_files)
@@ -100,6 +109,5 @@ def display_manuales_page():
     if st.session_state.get("pdf_a_mostrar"):
         pdf_info = st.session_state.pdf_a_mostrar
         mostrar_dialogo_pdf(pdf_info["url"], pdf_info["title"])
-
 
 
