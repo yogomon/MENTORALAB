@@ -111,21 +111,25 @@ def display_quiz_session_section():
         nombre_imagen_completo = pregunta_actual.get('nombre_imagen')
         if nombre_imagen_completo:
             try:
-                # Define el nombre de tu bucket de imágenes
                 bucket_name = "imagenes"
-                
-                # Obtiene la URL pública de la imagen desde Supabase Storage
                 public_url = supabase.storage.from_(bucket_name).get_public_url(nombre_imagen_completo)
                 
-                # Muestra la imagen usando la URL
+                # --- INICIO DEL BLOQUE DE DEPURACIÓN ---
+                st.subheader("🔍 Diagnóstico de Imagen")
+                st.write(f"**Nombre del archivo solicitado:** `{nombre_imagen_completo}`")
+                st.write(f"**URL pública generada por Supabase:**")
+                st.code(public_url, language=None)
+                st.markdown(f"[Haz clic aquí para probar la URL directamente]({public_url})")
+                st.markdown("---")
+                # --- FIN DEL BLOQUE DE DEPURACIÓN ---
+        
                 col_img_izq, col_img_der = st.columns([1, 2])
                 with col_img_izq:
                     st.image(public_url, use_container_width=True)
-            
+                    
             except Exception as e:
-                # Muestra un error si no se puede obtener la URL (ej. el archivo no existe en el bucket)
                 st.caption(f"[Error al cargar la imagen '{nombre_imagen_completo}' desde la nube: {e}]")
-
+        
         opciones_dict = {'A': pregunta_actual.get('opcion_a'), 'B': pregunta_actual.get('opcion_b'), 'C': pregunta_actual.get('opcion_c'), 'D': pregunta_actual.get('opcion_d')}
         opciones_validas = {k: v for k, v in opciones_dict.items() if v}
 
