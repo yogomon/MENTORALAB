@@ -143,6 +143,7 @@ sphinxcontrib-serializinghtml==2.0.0
 stack-data==0.6.3
 streamlit==1.46.1
 streamlit-tree-select==0.0.5
+supabase
 sympy==1.14.0
 tenacity==8.5.0
 thread==2.0.5
