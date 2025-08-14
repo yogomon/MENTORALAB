@@ -7,23 +7,20 @@ from supabase import create_client, Client
 logger = logging.getLogger(__name__)
 
 # --- INICIO: Conexión al cliente de Supabase ---
-# Este bloque se conecta a Supabase usando las claves guardadas en los secretos de Streamlit.
 try:
     supabase_url = st.secrets["supabase_url"]
     supabase_key = st.secrets["supabase_key"]
     supabase: Client = create_client(supabase_url, supabase_key)
 except Exception as e:
     st.error("Error al conectar con Supabase Storage. Asegúrate de que las claves 'supabase_url' y 'supabase_key' están en tus secretos.")
-    # Detenemos la ejecución si no podemos conectar, ya que la página no puede funcionar.
     st.stop()
 
 # --- FUNCIÓN AUXILIAR PARA OBTENER LOS ARCHIVOS DESDE SUPABASE ---
-@st.cache_data(show_spinner="Cargando lista de manuales...", ttl=300) # Cache por 5 minutos
+@st.cache_data(show_spinner="Cargando lista de manuales...", ttl=300)
 def get_files_from_supabase(bucket_name: str):
     """Obtiene una lista de archivos de un bucket de Supabase."""
     try:
         response = supabase.storage.from_(bucket_name).list()
-        # Filtramos para asegurarnos de que solo procesamos archivos PDF
         pdf_files = [file['name'] for file in response if file['name'].lower().endswith('.pdf')]
         return sorted(pdf_files)
     except Exception as e:
@@ -31,32 +28,69 @@ def get_files_from_supabase(bucket_name: str):
         st.error(f"No se pudo cargar la lista de archivos del bucket '{bucket_name}'.")
         return []
 
-# --- MODIFICACIÓN: La función ya no es un diálogo, sino un visor integrado ---
+# --- MODIFICACIÓN: Visor de PDF que renderiza en Canvas para evitar copia ---
 def display_pdf_viewer(pdf_url, title):
     """
-    Muestra un archivo PDF desde una URL pública directamente en la página.
+    Muestra un archivo PDF desde una URL renderizando cada página en un canvas
+    para evitar la selección y copia de texto.
     """
     st.header(title)
     
-    # Botón para volver a la lista de manuales
     if st.button("⬅️ Volver a la lista", key=f"back_btn_{title}"):
         del st.session_state["pdf_a_mostrar"]
         st.rerun()
 
-    st.components.v1.iframe(pdf_url, height=800, scrolling=True)
+    # Este HTML ahora usa JavaScript para buscar el PDF en la URL y dibujarlo
+    html_content = f'''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+            <style>
+                body {{ margin: 0; padding: 0; background-color: #f0f2f6; }}
+                #pdf-container {{ display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; }}
+                canvas {{ border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 100%; height: auto; }}
+            </style>
+        </head>
+        <body>
+            <div id="pdf-container"></div>
+            <script>
+                const pdfUrl = '{pdf_url}';
+                const pdfjsLib = window['pdfjs-dist/build/pdf'];
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                loadingTask.promise.then(function(pdf) {{
+                    const container = document.getElementById('pdf-container');
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {{
+                        pdf.getPage(pageNum).then(function(page) {{
+                            const scale = 1.5;
+                            const viewport = page.getViewport({{scale: scale}});
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            container.appendChild(canvas);
+                            const renderContext = {{ canvasContext: context, viewport: viewport }};
+                            page.render(renderContext);
+                        }});
+                    }}
+                }});
+            </script>
+        </body>
+        </html>
+    '''
+    st.components.v1.html(html_content, height=800, scrolling=True)
 
 # --- FUNCIÓN PRINCIPAL DE LA PÁGINA ---
 def display_manuales_page():
     """Crea la interfaz para la página de la biblioteca usando Supabase Storage."""
     
-    # --- MODIFICACIÓN: Lógica condicional para mostrar la lista o el visor ---
     if st.session_state.get("pdf_a_mostrar"):
-        # Si hay un PDF seleccionado, muestra solo el visor
         pdf_info = st.session_state.pdf_a_mostrar
         display_pdf_viewer(pdf_info["url"], pdf_info["title"])
     else:
-        # Si no hay ningún PDF seleccionado, muestra la página de selección
         st.header("Consulta los Manuales")
         st.markdown("")
         
@@ -91,6 +125,10 @@ def display_manuales_page():
                 for filename in manual_files:
                     chapter_title = os.path.splitext(filename)[0]
                     if st.button(chapter_title, key=f"btn_manual_{filename}", use_container_width=True):
+                        public_url = supabase.storage.from_(bucket_to_scan).get_public_url(filename)
+                        st.session_state.pdf_a_mostrar = {"url": public_url, "title": chapter_title}
+                        st.rerun()
+
                         public_url = supabase.storage.from_(bucket_to_scan).get_public_url(filename)
                         st.session_state.pdf_a_mostrar = {"url": public_url, "title": chapter_title}
                         st.rerun()
