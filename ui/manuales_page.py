@@ -124,6 +124,7 @@ def display_manuales_page():
     """
     # --- SECCIÓN 1: MANUALES ---
     st.header("Consulta los Manuales")
+    st.markdown("")
     
     base_path = "data"
     manuales_paths = {
@@ -146,9 +147,11 @@ def display_manuales_page():
             if "manual_a_mostrar" in st.session_state: del st.session_state.manual_a_mostrar
             st.rerun()
 
+    #st.divider()
+
     selected_view = st.session_state.get("manual_view")
     if selected_view:
-        st.subheader("Capítulos disponibles:")
+        #st.subheader("Capítulos disponibles:")
         path_to_scan = manuales_paths.get(selected_view)
         manual_files = get_manual_files(path_to_scan)
 
@@ -161,28 +164,7 @@ def display_manuales_page():
                 if st.button(chapter_title, key=f"btn_manual_{file_path}", use_container_width=True):
                     st.session_state.manual_a_mostrar = {"path": file_path, "title": chapter_title}
                     st.rerun()
-
-    #st.divider()
-
-    # --- SECCIÓN 2: ANÁLISIS ESTRATÉGICO ---
-    st.header("Explora lo más preguntado")
-    #st.markdown("Selecciona una especialidad para visualizar las 'zonas calientes' del temario.") 
-
-    report_prefixes = {
-        "bioquimica": "Informe Rentabilidad - Bioquimica Clinica",
-        "analisis": "Informe Rentabilidad - Analisis Clinicos",
-        "conjunto": "Informe Rentabilidad - Conjunto"
-    }
-
-    col_rep1, col_rep2 = st.columns(2)
-    with col_rep1:
-        if st.button("Bioquímica Clínica", use_container_width=True, type="secondary"):
-            st.session_state.informe_a_mostrar = "bioquimica"
-            st.rerun()
-    with col_rep2:
-        if st.button("Análisis Clínicos", use_container_width=True, type="secondary"):
-            st.session_state.informe_a_mostrar = "analisis"
-            st.rerun()
+    
 
     # --- LÓGICA PARA ABRIR DIÁLOGOS ---
     # Se comprueba si se debe mostrar un manual
@@ -190,17 +172,4 @@ def display_manuales_page():
         manual_info = st.session_state.manual_a_mostrar
         mostrar_dialogo_pdf(manual_info["path"], manual_info["title"], "manual_a_mostrar")
 
-    # Se comprueba si se debe mostrar un informe
-    if st.session_state.get("informe_a_mostrar"):
-        report_key = st.session_state.informe_a_mostrar
-        titles = {"bioquimica": "Bioquímica Clínica", "analisis": "Análisis Clínicos", "conjunto": "Análisis Conjunto"}
-        
-        with st.spinner("Buscando y procesando el último informe..."):
-            pdf_path_to_show = find_latest_report(report_prefixes[report_key])
-        
-        if pdf_path_to_show and os.path.exists(pdf_path_to_show):
-            mostrar_dialogo_pdf(pdf_path_to_show, titles[report_key], "informe_a_mostrar")
-        else:
-            st.error(f"No se ha encontrado ningún informe para '{titles[report_key]}'.")
-            if "informe_a_mostrar" in st.session_state:
-                del st.session_state["informe_a_mostrar"]
+
