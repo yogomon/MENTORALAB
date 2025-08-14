@@ -112,7 +112,7 @@ def display_rag_chat_section():
     Muestra la interfaz completa del chat RAG con un flujo de estado robusto y correcto.
     """
     st.header("¿Tienes alguna duda?")
-    st.markdown("Buscaré la respuesta en el Manual de Medicina de Laboratorio")
+    #st.markdown("Buscaré la respuesta en el Manual de Medicina de Laboratorio")
     #st.markdown("¿Tienes alguna duda? Buscaré la respuesta en nuestro Manual.") 
 
     # --- INICIO DE LA CORRECCIÓN DEFINITIVA ---
@@ -165,7 +165,7 @@ def display_rag_chat_section():
         st.rerun()
 
     # 3. Aceptar la entrada del usuario (siempre al final)
-    if prompt := st.chat_input("Pregunta lo quieras"):
+    if prompt := st.chat_input("Pregunta lo quieras."):
         # Añadir el mensaje del usuario al historial y recargar para iniciar el proceso de respuesta
         st.session_state.rag_messages.append({"role": "user", "content": prompt})
         st.rerun()
