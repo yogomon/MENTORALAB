@@ -105,15 +105,21 @@ def display_quiz_session_section():
 
         nombre_imagen_completo = pregunta_actual.get('nombre_imagen')
         if nombre_imagen_completo:
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            directorio_imagenes = os.path.join(project_root, 'data', 'imagenes')
-            ruta_imagen = os.path.join(directorio_imagenes, nombre_imagen_completo)
-            if os.path.exists(ruta_imagen):
-                col_img_izq, col_img_der = st.columns([1, 2]) 
+            try:
+                # 1. Define el nombre de tu bucket de imágenes
+                bucket_name = "imagenes"
+                
+                # 2. Obtiene la URL pública de la imagen desde Supabase Storage
+                public_url = supabase.storage.from_(bucket_name).get_public_url(nombre_imagen_completo)
+                
+                # 3. Muestra la imagen usando la URL
+                col_img_izq, col_img_der = st.columns([1, 2])
                 with col_img_izq:
-                    st.image(ruta_imagen, use_container_width=True)
-            else:
-                st.caption(f"[Error: Archivo '{nombre_imagen_completo}' no en '{directorio_imagenes}']")
+                    st.image(public_url, use_container_width=True)
+            
+        except Exception as e:
+            # Muestra un error si no se puede obtener la URL (ej. el archivo no existe en el bucket)
+            st.caption(f"[Error al cargar la imagen '{nombre_imagen_completo}' desde la nube: {e}]")
 
         opciones_dict = {'A': pregunta_actual.get('opcion_a'), 'B': pregunta_actual.get('opcion_b'), 'C': pregunta_actual.get('opcion_c'), 'D': pregunta_actual.get('opcion_d')}
         opciones_validas = {k: v for k, v in opciones_dict.items() if v}
