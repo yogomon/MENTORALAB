@@ -111,7 +111,7 @@ def display_quiz_session_section():
         nombre_imagen_completo = pregunta_actual.get('nombre_imagen')
         if nombre_imagen_completo:
             try:
-                bucket_name = "imagenes"
+                bucket_name = "Imagenes"
                 public_url = supabase.storage.from_(bucket_name).get_public_url(nombre_imagen_completo)
                 
                 # --- INICIO DEL BLOQUE DE DEPURACIÓN ---
