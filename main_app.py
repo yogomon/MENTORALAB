@@ -180,7 +180,7 @@ else: # --- Usuario SÍ Autenticado ---
     st.subheader(f"Hola, {user_nombre}")
 
     # --- MODIFICACIÓN: ESTRUCTURA DE PESTAÑAS ---
-    tab_cuestionarios, tab_manuales, tab_chat = st.tabs(["Cuestionarios", "Biblioteca", "Asistente",])
+    tab_cuestionarios, tab_chat = st.tabs(["Cuestionarios", "Asistente",])
 
     # --- PESTAÑA 1: CUESTIONARIOS ---
     with tab_cuestionarios:
@@ -220,8 +220,4 @@ else: # --- Usuario SÍ Autenticado ---
     with tab_chat:
         display_rag_chat_section()
     
-    #with tab_estrategia:
-        #display_analysis_page()
-    
-    with tab_manuales:
-        display_manuales_page()
+ 
