@@ -113,16 +113,6 @@ def display_quiz_session_section():
             try:
                 bucket_name = "Imagenes"
                 public_url = supabase.storage.from_(bucket_name).get_public_url(nombre_imagen_completo)
-                
-                # --- INICIO DEL BLOQUE DE DEPURACIÓN ---
-                st.subheader("🔍 Diagnóstico de Imagen")
-                st.write(f"**Nombre del archivo solicitado:** `{nombre_imagen_completo}`")
-                st.write(f"**URL pública generada por Supabase:**")
-                st.code(public_url, language=None)
-                st.markdown(f"[Haz clic aquí para probar la URL directamente]({public_url})")
-                st.markdown("---")
-                # --- FIN DEL BLOQUE DE DEPURACIÓN ---
-        
                 col_img_izq, col_img_der = st.columns([1, 2])
                 with col_img_izq:
                     st.image(public_url, use_container_width=True)
