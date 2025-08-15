@@ -3,16 +3,16 @@ import os
 import logging
 from supabase import create_client, Client
 
+# --- MODIFICACIÓN: Importamos la función de conexión centralizada ---
+from core.database import get_supabase_client
+
 # Configurar un logger para esta página
 logger = logging.getLogger(__name__)
 
-# --- INICIO: Conexión al cliente de Supabase ---
-try:
-    supabase_url = st.secrets["supabase_url"]
-    supabase_key = st.secrets["supabase_key"]
-    supabase: Client = create_client(supabase_url, supabase_key)
-except Exception as e:
-    st.error("Error al conectar con Supabase Storage. Asegúrate de que las claves 'supabase_url' y 'supabase_key' están en tus secretos.")
+# --- INICIO: Conexión al cliente de Supabase desde el módulo central ---
+supabase = get_supabase_client()
+if not supabase:
+    # Detenemos la ejecución si no se pudo conectar para evitar errores posteriores
     st.stop()
 
 # --- FUNCIÓN AUXILIAR PARA OBTENER LOS ARCHIVOS DESDE SUPABASE ---
@@ -20,6 +20,7 @@ except Exception as e:
 def get_files_from_supabase(bucket_name: str):
     """Obtiene una lista de archivos de un bucket de Supabase."""
     try:
+        # La variable 'supabase' ahora viene del bloque de inicialización de arriba
         response = supabase.storage.from_(bucket_name).list()
         pdf_files = [file['name'] for file in response if file['name'].lower().endswith('.pdf')]
         return sorted(pdf_files)
@@ -28,19 +29,16 @@ def get_files_from_supabase(bucket_name: str):
         st.error(f"No se pudo cargar la lista de archivos del bucket '{bucket_name}'.")
         return []
 
-# --- MODIFICACIÓN: Visor de PDF que renderiza en Canvas para evitar copia ---
+# --- Visor de PDF que renderiza en Canvas (sin cambios) ---
 def display_pdf_viewer(pdf_url, title):
     """
     Muestra un archivo PDF desde una URL renderizando cada página en un canvas
     para evitar la selección y copia de texto.
     """
-    #st.header(title)
-    
     if st.button("⬅️ Volver", key=f"back_btn_{title}"):
         del st.session_state["pdf_a_mostrar"]
         st.rerun()
 
-    # Este HTML ahora usa JavaScript para buscar el PDF en la URL y dibujarlo
     html_content = f'''
         <!DOCTYPE html>
         <html>
