@@ -15,7 +15,7 @@ from core.database import conectar_db
 # --- 1. Configuración y Parámetros ---
 logger = logging.getLogger(__name__)
 load_dotenv()
-TOP_K_CHUNKS_FOR_RAG = 15
+TOP_K_CHUNKS_FOR_RAG = 20
 
 # --- Configuración de Clientes de API ---
 try:
@@ -97,7 +97,8 @@ def stream_deepseek_response(question, context):
             model="deepseek-chat",
             messages=messages,
             stream=True,
-            max_tokens=5000
+            max_tokens=5000,
+            temperature=0.3
         )
         for chunk in response_stream:
             if chunk.choices[0].delta.content:
