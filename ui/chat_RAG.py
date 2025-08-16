@@ -15,7 +15,7 @@ from core.database import conectar_db
 # --- 1. Configuración y Parámetros ---
 logger = logging.getLogger(__name__)
 load_dotenv()
-TOP_K_CHUNKS_FOR_RAG = 10
+TOP_K_CHUNKS_FOR_RAG = 15
 
 # --- Configuración de Clientes de API ---
 try:
@@ -32,7 +32,7 @@ Eres un experto en Medicina de Laboratorio. Tu misión es responder a las pregun
 
 Reglas estrictas:
 1.  Cíñete al Contexto: Si la respuesta a la pregunta no se encuentra en el contexto, responde honestamente: "Lo siento, pero no he encontrado información sobre eso en el manual." No inventes información.
-2.  Explica con Claridad: Responde de forma completa a la pregunta del usuario, explicando los conceptos clave y proporcionando el detalle necesario para una buena comprensión.
+2.  Explica con Claridad: Responde de forma completa a la pregunta del usuario, explicando los conceptos clave y desarrollando la explicación en profundidad, utilizando los detalles del contexto para enriquecerla.
 
 
 ---
@@ -97,7 +97,7 @@ def stream_deepseek_response(question, context):
             model="deepseek-chat",
             messages=messages,
             stream=True,
-            max_tokens=1024
+            max_tokens=5000
         )
         for chunk in response_stream:
             if chunk.choices[0].delta.content:
