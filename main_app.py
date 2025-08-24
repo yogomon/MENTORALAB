@@ -81,6 +81,7 @@ def display_specialty_selection():
     st.subheader("¿Cuál es tu especialidad?")
     
     selected_specialty_name = st.selectbox(
+        "",
         options=list(ESPECIALIDAD_MAP.values()),
         key="specialty_selection_dropdown",
         index=None, # Para que no haya nada seleccionado por defecto
