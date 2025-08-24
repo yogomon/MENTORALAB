@@ -119,7 +119,7 @@ def display_config_section():
                 col_pers1, col_pers2 = st.columns(2)
                 with col_pers1:
                     st.markdown("Número de preguntas")
-                    opciones_num_preguntas = [20, 50, 100]
+                    opciones_num_preguntas = [20, 50, 100, "Todas"]
                     if st.session_state.get('config_num_preguntas', 20) not in opciones_num_preguntas:
                         st.session_state.config_num_preguntas = 20
                     for num_opt in opciones_num_preguntas:

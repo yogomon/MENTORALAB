@@ -265,13 +265,15 @@ def obtener_preguntas_para_cuestionario(conn, config_quiz, temas_lista=None, esp
         tipo_preg = config_quiz.get('tipo_pregunta') 
         topic_ids = config_quiz.get('temas_codigos') 
 
-        N_total = 20 
+        N_total = 20
         # 1. PRIMERO, comprobamos si estamos en el modo especial "Aleatorio".
         if modo == "Libre-Aleatorio":
             N_total = random.choice([20, 50, 100])
             config_quiz['numero_preguntas'] = N_total # Actualizamos el config para consistencia
         
-        # 2. SI NO, entonces comprobamos si el usuario ha especificado un número.
+        # 2. SI NO, entonces comprobamos si el usuario ha especificado un número o "Todas".
+        elif num_preg_solicitado == "Todas":
+            N_total = -1  # Valor especial para indicar "todas las preguntas"
         elif isinstance(num_preg_solicitado, int) and num_preg_solicitado > 0:
             N_total = num_preg_solicitado
         
@@ -290,13 +292,15 @@ def obtener_preguntas_para_cuestionario(conn, config_quiz, temas_lista=None, esp
                 random.shuffle(lista_bloques)
 
                 # 3. Construimos la lista final de IDs, respetando el orden barajado.
-                #    Como este modo es solo de prácticas, los tomamos todos hasta N_total.
                 ids_seleccionadas_temp = []
                 for bloque in lista_bloques:
                     ids_seleccionadas_temp.extend(bloque)
 
                 # 4. Aseguramos que el quiz final no tenga más preguntas de las solicitadas.
-                ids_preguntas_seleccionadas = ids_seleccionadas_temp[:N_total]
+                if N_total == -1:
+                    ids_preguntas_seleccionadas = ids_seleccionadas_temp
+                else:
+                    ids_preguntas_seleccionadas = ids_seleccionadas_temp[:N_total]
                 
             elif tipo_preg == "Ambas":
                 # --- PASO 1: OBTENER TODOS LOS CANDIDATOS DISPONIBLES ---
@@ -309,7 +313,6 @@ def obtener_preguntas_para_cuestionario(conn, config_quiz, temas_lista=None, esp
                 )
 
                 # --- PASO 2: CREAR Y BARAJAR UNA LISTA ÚNICA DE "UNIDADES" ---
-                # Una "unidad" es o un bloque de prácticas (una lista de IDs) o una teórica (una lista con un solo ID).
                 unidades_practicas = list(bloques_practicos_candidatos.values())
                 unidades_teoricas = [[id_teo] for id_teo in ids_teoricos_candidatos]
 
@@ -319,12 +322,13 @@ def obtener_preguntas_para_cuestionario(conn, config_quiz, temas_lista=None, esp
                 # --- PASO 3: CONSTRUIR EL QUIZ HASTA LLENARLO ---
                 ids_preguntas_seleccionadas = []
                 for unidad in todas_las_unidades:
-                    # Añadimos la unidad solo si cabe sin pasarnos del total solicitado.
-                    if len(ids_preguntas_seleccionadas) + len(unidad) <= N_total:
+                    # Si N_total es -1, siempre añadimos. Si no, comprobamos que quepa.
+                    if N_total == -1 or (len(ids_preguntas_seleccionadas) + len(unidad) <= N_total):
                         ids_preguntas_seleccionadas.extend(unidad)
                     
-                    # Opcional: si quieres parar en cuanto se llene, aunque no es estrictamente necesario
-                    if len(ids_preguntas_seleccionadas) == N_total:
+                    # Paramos si hemos alcanzado el número deseado (y no es -1)
+                    if N_total != -1 and len(ids_preguntas_seleccionadas) >= N_total:
+                        ids_preguntas_seleccionadas = ids_preguntas_seleccionadas[:N_total]
                         break
                     
         elif modo == "Libre-Aleatorio":
