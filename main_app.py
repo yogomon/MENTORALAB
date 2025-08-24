@@ -106,7 +106,7 @@ if not st.session_state.get('specialty_selected'):
     display_specialty_selection()
 else: # --- Especialidad SÍ seleccionada ---
 
-    st.subheader("Bienvenido")
+    st.subheader("Bienvenido/a!")
 
     # --- MODIFICACIÓN: ESTRUCTURA DE PESTAÑAS ---
     tab_cuestionarios, tab_chat = st.tabs(["Cuestionarios", "Asistente"])
