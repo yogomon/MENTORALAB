@@ -15,7 +15,6 @@ if project_root not in sys.path:
 # ---- AHORA, EL RESTO DE IMPORTS ----
 import streamlit as st
 from dotenv import load_dotenv
-import time
 import logging
 
 # Configuración del logging
@@ -28,8 +27,7 @@ logging.basicConfig(
 from core.db_quiz_loader import obtener_temas_disponibles
 from core.database import conectar_db
 from ui.styles import CSS_STRING
-from core import auth_handler
-from utils.helpers import COMUNIDAD_MAP, ESPECIALIDAD_MAP, get_key_from_value
+from utils.helpers import ESPECIALIDAD_MAP, get_key_from_value
 
 # Importar las funciones que renderizarán cada "página"
 from ui.config_page import display_config_section
@@ -52,14 +50,11 @@ st.set_page_config(layout="centered", page_title="MENTORA")
 # --- CSS Personalizado (Importado) ---
 st.markdown(CSS_STRING, unsafe_allow_html=True)
 
-# --- MODIFICACIÓN: Se elimina el CSS específico para el ancho de la barra lateral ---
-
 # --- Inicialización de st.session_state (Claves Globales) ---
-# Estados para Autenticación
+if 'specialty_selected' not in st.session_state:
+    st.session_state.specialty_selected = False
 if 'user_info' not in st.session_state:
     st.session_state.user_info = None
-if 'view' not in st.session_state:
-    st.session_state.view = 'login'
 
 if 'estado_app' not in st.session_state: 
     st.session_state.estado_app = 'seleccion_modo'
@@ -79,129 +74,64 @@ if 'review_filter' not in st.session_state: st.session_state.review_filter = "in
 if 'pregunta_a_revisar_idx' not in st.session_state: st.session_state.pregunta_a_revisar_idx = None
 
 
-# --- GESTIÓN DE AUTENTICACIÓN Y FLUJO PRINCIPAL DE LA APLICACIÓN ---
+# --- GESTIÓN DE SELECCIÓN DE ESPECIALIDAD ---
 
-def display_login_form():
-    # Este código no se ha modificado
-    st.subheader("Bienvenido de nuevo")
-    with st.form(key='login_form'):
-        login_email = st.text_input("Email", key="login_email")
-        login_password = st.text_input("Contraseña", type="password", key="login_pass")
-        submit_button = st.form_submit_button(label='Iniciar Sesión')
+def display_specialty_selection():
+    """Muestra el selector de especialidad."""
+    st.subheader("¿A qué especialidad perteneces?")
+    
+    selected_specialty_name = st.selectbox(
+        "Selecciona tu especialidad para continuar",
+        options=list(ESPECIALIDAD_MAP.values()),
+        key="specialty_selection_dropdown",
+        index=None, # Para que no haya nada seleccionado por defecto
+        placeholder="Elige una opción..."
+    )
 
-        if submit_button:
-            auth_response = auth_handler.autenticar_usuario(login_email, login_password)
-            
-            if auth_response['status'] == 'success':
-                st.session_state.user_info = auth_response['user_info']
-                st.session_state.view = 'app'
-                st.session_state.estado_app = 'seleccion_modo'
+    if st.button("Acceder", key="specialty_submit_btn"):
+        if selected_specialty_name:
+            specialty_key = get_key_from_value(ESPECIALIDAD_MAP, selected_specialty_name)
+            if specialty_key:
+                st.session_state.user_info = {'especialidad': specialty_key, 'nombre_usuario': 'Usuario'}
+                st.session_state.specialty_selected = True
                 st.rerun()
             else:
-                st.error(auth_response.get('message', 'Error de autenticación desconocido.'))
-    
-    _, col_nav_derecha = st.columns([2, 1.1])
-    with col_nav_derecha:
-        if st.button(" Crear cuenta nueva", key="nav_to_register_btn_login_form", use_container_width=True):
-            st.session_state.view = 'register'
-            st.rerun()
-
-def display_registration_form():
-    # Este código no se ha modificado
-    st.subheader("Crea tu cuenta")
-    with st.form("registration_form", clear_on_submit=False):
-        st.markdown("Introduce tus datos para crear una cuenta:")
-        reg_nombre = st.text_input("Nombre de Usuario", key="reg_nombre_usuario")
-        reg_email = st.text_input("Email", key="reg_email_usuario")
-        col_pass1, col_pass2 = st.columns(2)
-        with col_pass1:
-            reg_password = st.text_input("Contraseña", type="password", key="reg_password_usuario")
-        with col_pass2:
-            reg_password_confirm = st.text_input("Confirmar Contraseña", type="password", key="reg_password_confirm_usuario")
-        reg_comunidad_nombre = st.selectbox("Comunidad Autónoma", options=list(COMUNIDAD_MAP.values()), key="reg_comunidad_nombre")
-        reg_especialidad_nombre = st.selectbox("Especialidad (elige la principal si tienes varias)", options=list(ESPECIALIDAD_MAP.values()), key="reg_especialidad_nombre")
-        st.markdown("""<small>Requisitos...</small>""", unsafe_allow_html=True)
-        submitted_registro = st.form_submit_button("Registrarme")
-        if submitted_registro:
-            if reg_password != reg_password_confirm:
-                st.error("Las contraseñas no coinciden.")
-            else:
-                # Obtenemos las claves de los diccionarios para pasarlas a la función
-                reg_comunidad_clave = get_key_from_value(COMUNIDAD_MAP, reg_comunidad_nombre)
-                reg_especialidad_clave = get_key_from_value(ESPECIALIDAD_MAP, reg_especialidad_nombre)
-                
-                # Llamamos a la función de registro
-                usuario_id, error_msg = auth_handler.registrar_nuevo_usuario(
-                    reg_nombre, 
-                    reg_password, 
-                    reg_email, 
-                    reg_comunidad_clave, 
-                    reg_especialidad_clave
-                )
-                
-                # Mostramos el resultado al usuario
-                if error_msg:
-                    st.error(error_msg)
-                else:
-                    st.success("¡Usuario registrado con éxito! Ahora puedes iniciar sesión.")
-                    time.sleep(2) # Pausa para que el usuario lea el mensaje
-                    st.session_state.view = 'login'
-                    st.rerun()
-    if st.button("¿Ya tienes cuenta? Inicia Sesión", key="nav_to_login_btn_reg_form"):
-        st.session_state.view = 'login'
-        st.rerun()
+                st.error("Error interno: Clave de especialidad no encontrada.")
+        else:
+            st.warning("Por favor, selecciona una especialidad para acceder.")
 
 
 # --- Lógica Principal de la Aplicación ---
-if 'user_info' not in st.session_state or st.session_state.user_info is None:
-    # Lógica de autenticación sin cambios...
-    current_view = st.session_state.get('view', 'login')
-    if current_view == 'login':
-        display_login_form()
-    elif current_view == 'register':
-        display_registration_form()
-    else:
-        st.session_state.view = 'login'
-        display_login_form()
-else: # --- Usuario SÍ Autenticado ---
+if not st.session_state.get('specialty_selected'):
+    display_specialty_selection()
+else: # --- Especialidad SÍ seleccionada ---
 
-    # Botón de Cerrar Sesión global en la parte superior derecha
-    _, col_logout = st.columns([0.85, 0.15]) 
-    with col_logout:
-        if st.button("Salir", key="logout_button_global"):
-            keys_to_clear = list(st.session_state.keys())
-            for key in keys_to_clear:
-                del st.session_state[key]
-            st.session_state.view = 'login'
-            st.rerun()    
-    
-    user_nombre = st.session_state.user_info.get('nombre_usuario', 'Usuario')
-    st.subheader(f"Hola, {user_nombre}")
+    st.subheader("Bienvenido")
 
     # --- MODIFICACIÓN: ESTRUCTURA DE PESTAÑAS ---
-    tab_cuestionarios, tab_chat = st.tabs(["Cuestionarios", "Asistente",])
+    tab_cuestionarios, tab_chat = st.tabs(["Cuestionarios", "Asistente"])
 
     # --- PESTAÑA 1: CUESTIONARIOS ---
     with tab_cuestionarios:
         if 'temas_disponibles_lista' not in st.session_state:
-            print("DEBUG MAIN_APP (AUTH): Cargando temas disponibles para usuario autenticado...")
-            conn_temp_auth = None
+            print("DEBUG MAIN_APP: Cargando temas disponibles para la especialidad...")
+            conn_temp = None
             try:
-                conn_temp_auth = conectar_db()
-                if conn_temp_auth:
+                conn_temp = conectar_db()
+                if conn_temp:
                     especialidad_actual = st.session_state.user_info.get('especialidad')
-                    st.session_state.temas_disponibles_lista = obtener_temas_disponibles(conn_temp_auth, especialidad_actual)
+                    st.session_state.temas_disponibles_lista = obtener_temas_disponibles(conn_temp, especialidad_actual)
                     if not st.session_state.temas_disponibles_lista:
                         st.warning("No se encontraron temas disponibles para esta especialidad.")
                 else:
-                    st.error("No se pudo conectar a la base de datos para cargar temas (AUTH).")
+                    st.error("No se pudo conectar a la base de datos para cargar temas.")
                     st.session_state.temas_disponibles_lista = []
-            except Exception as e_auth:
-                st.error(f"Error al cargar temas disponibles (AUTH): {e_auth}")
+            except Exception as e:
+                st.error(f"Error al cargar temas disponibles: {e}")
                 st.session_state.temas_disponibles_lista = []
             finally:
-                if conn_temp_auth:
-                    conn_temp_auth.close()
+                if conn_temp:
+                    conn_temp.close()
 
         # --- Enrutador de Vistas ---
         if st.session_state.estado_app in ['seleccion_modo', 'configuracion_libre', 'configuracion_oficial']:
