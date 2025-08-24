@@ -78,10 +78,10 @@ if 'pregunta_a_revisar_idx' not in st.session_state: st.session_state.pregunta_a
 
 def display_specialty_selection():
     """Muestra el selector de especialidad."""
-    st.subheader("¿A qué especialidad perteneces?")
+    st.subheader("¿Cuál es tu especialidad?")
     
     selected_specialty_name = st.selectbox(
-        "Selecciona tu especialidad para continuar",
+        #"Selecciona tu especialidad para continuar",
         options=list(ESPECIALIDAD_MAP.values()),
         key="specialty_selection_dropdown",
         index=None, # Para que no haya nada seleccionado por defecto
